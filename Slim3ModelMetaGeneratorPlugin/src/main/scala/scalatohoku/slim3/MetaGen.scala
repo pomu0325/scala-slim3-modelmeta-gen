@@ -5,9 +5,9 @@ class MetaGen(val packageName:String,val modelName:String) {
 
   def generateSourceFile() {
     import java.io._
-    val metaSrcDir = "src/main/scala/"+packageName+"/meta"
+    val metaSrcDir = "src/main/scala/" + packageName.replace('.', '/') + "/meta"
     val dir = new File(metaSrcDir)
-    if( ! dir.exists ) dir.mkdir
+    if( ! dir.exists ) dir.mkdirs
     val file = new FileWriter( metaSrcDir+"/"+modelName+"Meta.scala")
     file.write(contents)
     file.close
