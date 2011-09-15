@@ -3,9 +3,9 @@ package scalatohoku.slim3
 object MetaTemplate {
   object Attr {
     val String = """
-  val $$propname$$ = new StringAttributeMeta[$$modelname$$](this, "$$propname$$", "$$propname$$")"""
+  val $$propname$$ = new String$$unindexed$$AttributeMeta[$$modelname$$](this, "$$propname$$", "$$propname$$")"""
     val Core = """
-  val $$propname$$ = new CoreAttributeMeta[$$modelname$$,$$typename$$](this, "$$propname$$", "$$propname$$",classOf[$$typename$$])"""
+  val $$propname$$ = new Core$$unindexed$$AttributeMeta[$$modelname$$,$$typename$$](this, "$$propname$$", "$$propname$$",classOf[$$typename$$])"""
     val Key = """
   val key = new CoreAttributeMeta[$$modelname$$,Key](this, "__key__", "key", classOf[Key])"""
   }

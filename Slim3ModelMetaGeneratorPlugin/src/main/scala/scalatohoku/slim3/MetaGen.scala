@@ -2,7 +2,8 @@ package scalatohoku.slim3
 
 class MetaGen(val packageName:String,val modelName:String) {
   val props = new scala.collection.mutable.HashMap[String,String] // name -> className
-    
+  val annotations = new collection.mutable.HashMap[String,List[String]]
+  
   def generateSourceFile() {
     import java.io._
     val metaSrcDir = "src/main/scala/" + packageName.replace('.', '/') + "/meta"
@@ -12,15 +13,30 @@ class MetaGen(val packageName:String,val modelName:String) {
     file.write(contents)
     file.close
   }
+  
+  private def attribute(prop: String, k: String): String = {
+    annotations.get(prop).flatMap{
+      _.find(_.startsWith("org.slim3.datastore.Attribute")).flatMap{a =>
+        System.out.println(a)
+        val re = """.*%s = ([^,]+).*\)""".format(k).r
+        a match {
+          case re(v) => Some(v.trim)
+          case _ => None
+        }
+      }
+    } getOrElse ""
+  }
 
   private def contents:String = {
     val valsSrc = props.keys.map( k => props(k) match {
       case "String" =>
-        MetaTemplate.Attr.String.replace("$$propname$$",k)
+        val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
+        MetaTemplate.Attr.String.replace("$$propname$$",k).replace("$$unindexed$$", unindexed)
       case "com.google.appengine.api.datastore.Key" =>
         MetaTemplate.Attr.Key
       case clazz =>
-        MetaTemplate.Attr.Core.replace("$$propname$$",k).replace("$$typename$$", clazz)
+        val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
+        MetaTemplate.Attr.Core.replace("$$propname$$",k).replace("$$typename$$", clazz).replace("$$unindexed$$", unindexed)
     } )
     val modelToEntitySrc  = props.keys.map( k => 
       ( props(k) match {
