@@ -2,7 +2,7 @@ package scalatohoku.slim3
 
 class MetaGen(val packageName:String,val modelName:String) {
   val props = new scala.collection.mutable.HashMap[String,String] // name -> className
-
+    
   def generateSourceFile() {
     import java.io._
     val metaSrcDir = "src/main/scala/" + packageName.replace('.', '/') + "/meta"
@@ -33,10 +33,20 @@ class MetaGen(val packageName:String,val modelName:String) {
     val entityToModelSrc  = props.keys.map( k =>
       MetaTemplate.EntityToModel.replace("$$propname$$",k).replace("$$setter$$",toSetter(k)).replace("$$typename$$", props(k))
     )
+    
+    val modelToJsonSrc = props.keys.map( k =>
+      MetaTemplate.ModelToJson.replace("$$propname$$", k).replace("$$getter$$", toGetter(k))
+    )
+    
+    val jsonToModelSrc = props.keys.map( k =>
+      MetaTemplate.JsonToModel.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k))
+    )
     MetaTemplate.MetaClass
     .replace("$$instance_variables$$",valsSrc.mkString)
     .replace("$$entity_to_model$$",entityToModelSrc.mkString)
     .replace("$$model_to_entity$$",modelToEntitySrc.mkString)
+    .replace("$$model_to_json$$",modelToJsonSrc.mkString)
+    .replace("$$json_to_model$$",jsonToModelSrc.mkString)
     .replace("$$modelname$$",modelName)
     .replace("$$package$$",packageName)
   }
