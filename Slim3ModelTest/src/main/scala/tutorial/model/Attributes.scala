@@ -8,8 +8,7 @@ import java.util.Date
 import scala.reflect.BeanProperty
 
 import com.google.appengine.api.datastore.Key
-import org.slim3.datastore.Attribute
-import org.slim3.datastore.Model
+import org.slim3.datastore._
 
 @Model(schemaVersion = 1)
 class Attributes {
@@ -32,4 +31,12 @@ class Attributes {
     @BeanProperty
     @Attribute(unindexed = true)
     var unindexedCore:Date = new Date
+    
+    @BeanProperty
+    @Attribute(listener = classOf[ModificationDate])
+    var updated:Date = _
+    
+    @BeanProperty
+    @Attribute(listener = classOf[CreationDate])
+    var created:Date = _
 }
