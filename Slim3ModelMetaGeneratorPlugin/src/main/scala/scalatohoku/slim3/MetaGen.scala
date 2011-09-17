@@ -28,12 +28,17 @@ class MetaGen(val packageName: String, val modelName: String) {
   }
 
   private def contents: String = {
+    val collections = collection.mutable.Set[String]()
     val valsSrc = props.keys.map(k => props(k) match {
       case "String" =>
         val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
         MetaTemplate.Attr.String.replace("$$propname$$", k).replace("$$unindexed$$", unindexed)
       case "com.google.appengine.api.datastore.Key" =>
         MetaTemplate.Attr.Key
+      case clazz @ "java.util.List[String]" =>
+        val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
+        collections += k
+        MetaTemplate.Attr.StringCollection.replace("$$propname$$", k).replace("$$typename$$", clazz).replace("$$unindexed$$", unindexed)
       case clazz =>
         val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
         MetaTemplate.Attr.Core.replace("$$propname$$", k).replace("$$typename$$", clazz).replace("$$unindexed$$", unindexed)
@@ -64,10 +69,17 @@ class MetaGen(val packageName: String, val modelName: String) {
       MetaTemplate.EntityToModel.replace("$$propname$$", k).replace("$$setter$$", toSetter(k)).replace("$$typename$$", props(k)))
 
     val modelToJsonSrc = props.keys.map(k =>
-      MetaTemplate.ModelToJson.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)))
+      if (collections.contains(k))
+        MetaTemplate.ModelToJsonCollection.replace("$$propname$$", k).replace("$$getter$$", toGetter(k))
+      else
+        MetaTemplate.ModelToJson.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)))
 
     val jsonToModelSrc = props.keys.map(k =>
-      MetaTemplate.JsonToModel.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k)))
+      if (collections.contains(k))
+        MetaTemplate.JsonToModelCollection.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k))
+      else
+        MetaTemplate.JsonToModel.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k)))
+
     MetaTemplate.MetaClass
       .replace("$$instance_variables$$", valsSrc.mkString)
       .replace("$$entity_to_model$$", entityToModelSrc.mkString)

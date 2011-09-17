@@ -8,6 +8,8 @@ object MetaTemplate {
   val $$propname$$ = new Core$$unindexed$$AttributeMeta[$$modelname$$,$$typename$$](this, "$$propname$$", "$$propname$$",classOf[$$typename$$])"""
     val Key = """
   val key = new CoreAttributeMeta[$$modelname$$,Key](this, "__key__", "key", classOf[Key])"""
+    val StringCollection = """
+  val $$propname$$ = new org.slim3.datastore.StringCollection$$unindexed$$AttributeMeta[$$modelname$$, $$typename$$](this, "$$propname$$", "$$propname$$", classOf[$$typename$$])"""
   }
   val EntityToModel = """
     model.$$setter$$(entity.getProperty("$$propname$$").asInstanceOf[$$typename$$])"""
@@ -25,9 +27,36 @@ object MetaTemplate {
       encoder0.encode(writer, m.$$getter$$())
     }
 """
+  val ModelToJsonCollection = """
+    if(m.$$getter$$() != null){
+      writer.setNextPropertyName("$$propname$$")
+      writer.beginArray()
+      m.$$getter$$.foreach{encoder0.encode(writer, _)}
+      writer.endArray()
+    }
+"""
   val JsonToModel = """
     reader = rootReader.newObjectReader("$$propname$$");
     m.$$setter$$(decoder0.decode(reader, m.$$getter$$()));
+"""
+  val JsonToModelCollection = """
+    reader = rootReader.newObjectReader("$$propname$$");
+    {
+      val elements = new java.util.ArrayList[String]
+      val r = rootReader.newArrayReader("$$propname$$")
+      if(r != null){
+        reader = r
+        val n = r.length
+        (0 until r.length).foreach{i =>
+          r.setIndex(i)
+          val v = decoder0.decode(reader, null.asInstanceOf[String])
+          if(v != null){
+            elements.add(v)
+          }
+        }
+        m.$$setter$$(elements)
+      }
+    }
 """
 
   val AttributeListener = """
@@ -47,6 +76,7 @@ package $$package$$.meta
 import $$package$$.model.$$modelname$$
 import org.slim3.datastore._
 import com.google.appengine.api.datastore._
+import collection.JavaConversions._
 
 class $$modelname$$Meta extends ModelMeta[$$modelname$$]("$$modelname$$", classOf[$$modelname$$]) {
 

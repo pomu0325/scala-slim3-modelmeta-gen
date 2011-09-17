@@ -82,4 +82,6 @@ class AllDataType {
     @BeanProperty
     var rate:com.google.appengine.api.datastore.Rating = _
 
+    @BeanProperty
+    var stringList:java.util.List[String] = _
 }
