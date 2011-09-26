@@ -68,6 +68,7 @@ class MetaGen(val packageName: String, val modelName: String) {
       (props(k) match {
         case "com.google.appengine.api.datastore.Text" | "com.google.appengine.api.datastore.Blob" =>
           MetaTemplate.ModelToEntity.Unindexed
+        case _ if attribute(k, "unindexed") == "true" => MetaTemplate.ModelToEntity.Unindexed
         case _ => MetaTemplate.ModelToEntity.Indexed
       }).replace("$$propname$$", k).replace("$$getter$$", toGetter(k)))
 
