@@ -86,7 +86,7 @@ class AllDataType {
     var stringList:java.util.List[String] = _
     
     @BeanProperty
-    var keySet:java.util.Set[Key] = _
+    var keySet:java.util.TreeSet[Key] = _
     
     @BeanProperty
     @Attribute(lob = true)

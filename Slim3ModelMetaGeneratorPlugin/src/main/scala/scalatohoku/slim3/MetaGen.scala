@@ -30,7 +30,7 @@ class MetaGen(val packageName: String, val modelName: String) {
   private def contents: String = {
     val collections = collection.mutable.Map[String, Pair[String, String]]()
     val persistentProps = props.keys.filter { attribute(_, "persistent") != "false" }
-    val CollectionType = """java\.util\.(?:List|Set|SortedSet)\[(.+)\]""".r
+    val CollectionType = """java\.util\.(?:ArrayList|LinkedList|HashSet|LinkedHashSet|TreeSet|List|Set|SortedSet)\[(.+)\]""".r
 
     val valsSrc = persistentProps.map(k => props(k) match {
       case "String" =>
@@ -96,9 +96,10 @@ class MetaGen(val packageName: String, val modelName: String) {
     val jsonToModelSrc = props.keys.map { k =>
       if (collections.contains(k)) {
         val (col, clz) = collections(k) match {
-          case (c, t) if c.startsWith("java.util.List") => ("ArrayList", t)
-          case (c, t) if c.startsWith("java.util.Set") => ("HashSet", t)
-          case (c, t) if c.startsWith("java.util.SortedSet") => ("TreeSet", t)
+          case (c, t) if c.startsWith("java.util.List") => ("java.util.ArrayList[%s]".format(t), t)
+          case (c, t) if c.startsWith("java.util.Set") => ("java.util.HashSet[%s]".format(t), t)
+          case (c, t) if c.startsWith("java.util.SortedSet") => ("java.util.TreeSet[%s]".format(t), t)
+          case e => e
         }
         MetaTemplate.JsonToModelCollection.replace("$$propname$$", k).replace("$$clazz$$", clz).replace("$$collection$$", col).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k))
       } else props(k) match {

@@ -65,7 +65,7 @@ object MetaTemplate {
   val JsonToModelCollection = """
     reader = rootReader.newObjectReader("$$propname$$");
     {
-      val elements = new java.util.$$collection$$[$$clazz$$]
+      val elements = new $$collection$$
       val r = rootReader.newArrayReader("$$propname$$")
       if(r != null){
         reader = r
