@@ -28,19 +28,23 @@ class MetaGen(val packageName: String, val modelName: String) {
   }
 
   private def contents: String = {
-    val collections = collection.mutable.Set[String]()
+    val collections = collection.mutable.Map[String, Pair[String, String]]()
     val persistentProps = props.keys.filter{attribute(_, "persistent") != "false"}
-    
+    val CollectionType = """java\.util\.(?:List|Set|SortedSet)\[(.+)\]""".r
+      
     val valsSrc = persistentProps.map(k => props(k) match {
       case "String" =>
         val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
         MetaTemplate.Attr.String.replace("$$propname$$", k).replace("$$unindexed$$", unindexed)
       case "com.google.appengine.api.datastore.Key" =>
         MetaTemplate.Attr.Key
-      case clazz @ "java.util.List[String]" =>
+      case clazz @ CollectionType(t) =>
         val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
-        collections += k
-        MetaTemplate.Attr.StringCollection.replace("$$propname$$", k).replace("$$typename$$", clazz).replace("$$unindexed$$", unindexed)
+        collections += (k -> (clazz, t))
+        if (t == "String")
+          MetaTemplate.Attr.StringCollection.replace("$$propname$$", k).replace("$$typename$$", clazz).replace("$$unindexed$$", unindexed)
+        else
+          MetaTemplate.Attr.Collection.replace("$$propname$$", k).replace("$$typename$$", clazz).replace("$$typename2$$", t).replace("$$unindexed$$", unindexed)
       case clazz =>
         val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
         MetaTemplate.Attr.Core.replace("$$propname$$", k).replace("$$typename$$", clazz).replace("$$unindexed$$", unindexed)
@@ -77,9 +81,14 @@ class MetaGen(val packageName: String, val modelName: String) {
         MetaTemplate.ModelToJson.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)))
 
     val jsonToModelSrc = props.keys.map(k =>
-      if (collections.contains(k))
-        MetaTemplate.JsonToModelCollection.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k))
-      else
+      if (collections.contains(k)) {
+        val (col, clz) = collections(k) match {
+          case (c, t) if c.startsWith("java.util.List") => ("ArrayList", t)
+          case (c, t) if c.startsWith("java.util.Set") => ("HashSet", t)
+          case (c, t) if c.startsWith("java.util.SortedSet") => ("TreeSet", t)
+        }
+        MetaTemplate.JsonToModelCollection.replace("$$propname$$", k).replace("$$clazz$$", clz).replace("$$collection$$", col).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k))
+      } else
         MetaTemplate.JsonToModel.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k)))
 
     MetaTemplate.MetaClass

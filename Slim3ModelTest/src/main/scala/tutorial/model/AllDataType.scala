@@ -84,4 +84,7 @@ class AllDataType {
 
     @BeanProperty
     var stringList:java.util.List[String] = _
+    
+    @BeanProperty
+    var keySet:java.util.Set[Key] = _
 }

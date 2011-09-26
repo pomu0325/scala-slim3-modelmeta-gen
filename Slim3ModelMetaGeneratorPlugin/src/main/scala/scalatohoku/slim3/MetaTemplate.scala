@@ -10,6 +10,8 @@ object MetaTemplate {
   val key = new CoreAttributeMeta[$$modelname$$,Key](this, "__key__", "key", classOf[Key])"""
     val StringCollection = """
   val $$propname$$ = new org.slim3.datastore.StringCollection$$unindexed$$AttributeMeta[$$modelname$$, $$typename$$](this, "$$propname$$", "$$propname$$", classOf[$$typename$$])"""
+    val Collection = """
+  val $$propname$$ = new org.slim3.datastore.Collection$$unindexed$$AttributeMeta[$$modelname$$, $$typename$$, $$typename2$$](this, "$$propname$$", "$$propname$$", classOf[$$typename$$])"""
   }
   val EntityToModel = """
     model.$$setter$$(entity.getProperty("$$propname$$").asInstanceOf[$$typename$$])"""
@@ -42,14 +44,14 @@ object MetaTemplate {
   val JsonToModelCollection = """
     reader = rootReader.newObjectReader("$$propname$$");
     {
-      val elements = new java.util.ArrayList[String]
+      val elements = new java.util.$$collection$$[$$clazz$$]
       val r = rootReader.newArrayReader("$$propname$$")
       if(r != null){
         reader = r
         val n = r.length
         (0 until r.length).foreach{i =>
           r.setIndex(i)
-          val v = decoder0.decode(reader, null.asInstanceOf[String])
+          val v = decoder0.decode(reader, null.asInstanceOf[$$clazz$$])
           if(v != null){
             elements.add(v)
           }
