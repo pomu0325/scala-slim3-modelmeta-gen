@@ -23,7 +23,10 @@ object MetaTemplate {
   
   val EntityToModelLongText = """
     model.$$setter$$(textToString(entity.getProperty("$$propname$$").asInstanceOf[com.google.appengine.api.datastore.Text]))"""
-    
+  
+  val EntityToModelBlob = """
+    model.$$setter$$(blobToBytes(entity.getProperty("$$propname$$").asInstanceOf[com.google.appengine.api.datastore.Blob]))"""
+  
   object ModelToEntity {
     val Indexed = """
     entity.setProperty("$$propname$$", m.$$getter$$())"""
@@ -31,6 +34,8 @@ object MetaTemplate {
     entity.setUnindexedProperty("$$propname$$", m.$$getter$$())"""
     val LongText = """
     entity.setUnindexedProperty("$$propname$$", stringToText(m.$$getter$$()))"""
+    val Blob = """
+    entity.setUnindexedProperty("$$propname$$", bytesToBlob(m.$$getter$$()))"""
   }
   
   val ModelToJson = """
@@ -45,6 +50,12 @@ object MetaTemplate {
       writer.beginArray()
       m.$$getter$$.foreach{encoder0.encode(writer, _)}
       writer.endArray()
+    }
+"""
+  val ModelToJsonBlob = """
+    if(m.$$getter$$ != null){
+      writer.setNextPropertyName("$$propname$$")
+      encoder0.encode(writer, new com.google.appengine.api.datastore.ShortBlob(m.$$getter$$))
     }
 """
   val JsonToModel = """
@@ -67,6 +78,18 @@ object MetaTemplate {
           }
         }
         m.$$setter$$(elements)
+      }
+    }
+"""
+  val JsonToModelBlob = """
+    if(m.$$getter$$ != null){
+      m.$$setter$$(decoder0.decode(reader, new com.google.appengine.api.datastore.ShortBlob(m.$$getter$$)).getBytes)
+    } else {
+      val v = decoder0.decode(reader, null.asInstanceOf[com.google.appengine.api.datastore.ShortBlob])
+      if(v != null){
+        m.$$setter$$(v.getBytes)
+      } else {
+        m.$$setter$$(null)
       }
     }
 """
