@@ -13,18 +13,24 @@ object MetaTemplate {
     val Collection = """
   val $$propname$$ = new org.slim3.datastore.Collection$$unindexed$$AttributeMeta[$$modelname$$, $$typename$$, $$typename2$$](this, "$$propname$$", "$$propname$$", classOf[$$typename$$])"""
   }
+  
   val EntityToModel = """
     model.$$setter$$(entity.getProperty("$$propname$$").asInstanceOf[$$typename$$])"""
 
   val EntityToModelLob = """
     val _$$propname$$ = blobToSerializable(entity.getProperty("$$propname$$").asInstanceOf[com.google.appengine.api.datastore.Blob])
     model.$$setter$$(_$$propname$$)"""
+  
+  val EntityToModelLongText = """
+    model.$$setter$$(textToString(entity.getProperty("$$propname$$").asInstanceOf[com.google.appengine.api.datastore.Text]))"""
     
   object ModelToEntity {
     val Indexed = """
     entity.setProperty("$$propname$$", m.$$getter$$())"""
     val Unindexed = """
     entity.setUnindexedProperty("$$propname$$", m.$$getter$$())"""
+    val LongText = """
+    entity.setUnindexedProperty("$$propname$$", stringToText(m.$$getter$$()))"""
   }
   
   val ModelToJson = """

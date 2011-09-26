@@ -91,6 +91,14 @@ class AllDataType {
     @BeanProperty
     @Attribute(lob = true)
     var obj: Test = _
+    
+    @BeanProperty
+    @Attribute(lob = true)
+    var bytes: Array[Byte] = _
+    
+    @BeanProperty
+    @Attribute(lob = true)
+    var longtext: String = _
 }
 
 
