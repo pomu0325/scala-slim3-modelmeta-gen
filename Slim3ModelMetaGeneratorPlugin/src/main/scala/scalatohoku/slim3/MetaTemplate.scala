@@ -16,6 +16,10 @@ object MetaTemplate {
   val EntityToModel = """
     model.$$setter$$(entity.getProperty("$$propname$$").asInstanceOf[$$typename$$])"""
 
+  val EntityToModelLob = """
+    val _$$propname$$ = blobToSerializable(entity.getProperty("$$propname$$").asInstanceOf[com.google.appengine.api.datastore.Blob])
+    model.$$setter$$(_$$propname$$)"""
+    
   object ModelToEntity {
     val Indexed = """
     entity.setProperty("$$propname$$", m.$$getter$$())"""
@@ -39,7 +43,7 @@ object MetaTemplate {
 """
   val JsonToModel = """
     reader = rootReader.newObjectReader("$$propname$$");
-    m.$$setter$$(decoder0.decode(reader, m.$$getter$$()));
+    m.$$setter$$(decoder0.decode(reader, m.$$getter$$(), classOf[$$clazz$$]));
 """
   val JsonToModelCollection = """
     reader = rootReader.newObjectReader("$$propname$$");

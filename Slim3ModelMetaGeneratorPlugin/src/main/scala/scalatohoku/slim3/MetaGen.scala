@@ -71,8 +71,12 @@ class MetaGen(val packageName: String, val modelName: String) {
         case _ => MetaTemplate.ModelToEntity.Indexed
       }).replace("$$propname$$", k).replace("$$getter$$", toGetter(k)))
 
-    val entityToModelSrc = persistentProps.map(k =>
-      MetaTemplate.EntityToModel.replace("$$propname$$", k).replace("$$setter$$", toSetter(k)).replace("$$typename$$", props(k)))
+    val entityToModelSrc = persistentProps.map{k =>
+      if (attribute(k, "lob") != "true")
+        MetaTemplate.EntityToModel.replace("$$propname$$", k).replace("$$setter$$", toSetter(k)).replace("$$typename$$", props(k))
+      else
+        MetaTemplate.EntityToModelLob.replace("$$propname$$", k).replace("$$setter$$", toSetter(k))
+    }
 
     val modelToJsonSrc = props.keys.map(k =>
       if (collections.contains(k))
@@ -89,7 +93,7 @@ class MetaGen(val packageName: String, val modelName: String) {
         }
         MetaTemplate.JsonToModelCollection.replace("$$propname$$", k).replace("$$clazz$$", clz).replace("$$collection$$", col).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k))
       } else
-        MetaTemplate.JsonToModel.replace("$$propname$$", k).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k)))
+        MetaTemplate.JsonToModel.replace("$$propname$$", k).replace("$$clazz$$", props(k)).replace("$$getter$$", toGetter(k)).replace("$$setter$$", toSetter(k)))
 
     MetaTemplate.MetaClass
       .replace("$$instance_variables$$", valsSrc.mkString)

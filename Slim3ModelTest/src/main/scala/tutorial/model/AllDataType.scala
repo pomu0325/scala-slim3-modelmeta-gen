@@ -87,4 +87,11 @@ class AllDataType {
     
     @BeanProperty
     var keySet:java.util.Set[Key] = _
+    
+    @BeanProperty
+    @Attribute(lob = true)
+    var obj: Test = _
 }
+
+
+class Test extends Serializable
