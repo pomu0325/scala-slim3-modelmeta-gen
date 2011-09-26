@@ -29,7 +29,9 @@ class MetaGen(val packageName: String, val modelName: String) {
 
   private def contents: String = {
     val collections = collection.mutable.Set[String]()
-    val valsSrc = props.keys.map(k => props(k) match {
+    val persistentProps = props.keys.filter{attribute(_, "persistent") != "false"}
+    
+    val valsSrc = persistentProps.map(k => props(k) match {
       case "String" =>
         val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
         MetaTemplate.Attr.String.replace("$$propname$$", k).replace("$$unindexed$$", unindexed)
@@ -58,14 +60,14 @@ class MetaGen(val packageName: String, val modelName: String) {
       }
     }
 
-    val modelToEntitySrc = props.keys.map(k =>
+    val modelToEntitySrc = persistentProps.map(k =>
       (props(k) match {
         case "com.google.appengine.api.datastore.Text" | "com.google.appengine.api.datastore.Blob" =>
           MetaTemplate.ModelToEntity.Unindexed
         case _ => MetaTemplate.ModelToEntity.Indexed
       }).replace("$$propname$$", k).replace("$$getter$$", toGetter(k)))
 
-    val entityToModelSrc = props.keys.map(k =>
+    val entityToModelSrc = persistentProps.map(k =>
       MetaTemplate.EntityToModel.replace("$$propname$$", k).replace("$$setter$$", toSetter(k)).replace("$$typename$$", props(k)))
 
     val modelToJsonSrc = props.keys.map(k =>

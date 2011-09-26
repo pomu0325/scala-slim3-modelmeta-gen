@@ -39,4 +39,8 @@ class Attributes {
     @BeanProperty
     @Attribute(listener = classOf[CreationDate])
     var created:Date = _
+    
+    @BeanProperty
+    @Attribute(persistent = false)
+    var nonpersistent: String = _
 }
