@@ -8,7 +8,7 @@ scalaVersion := "2.9.1"
 
 autoCompilerPlugins := true
 
-addCompilerPlugin("scalatohoku.slim3" %% "slim3modelmetageneratorplugin" % "0.1")
+addCompilerPlugin("scalatohoku.slim3" %% "slim3modelmetageneratorplugin" % "0.1-SNAPSHOT")
 
 libraryDependencies ++= Seq(
   "org.slim3" % "slim3" % "1.0.13"

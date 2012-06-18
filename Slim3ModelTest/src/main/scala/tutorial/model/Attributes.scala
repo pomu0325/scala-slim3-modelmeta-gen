@@ -43,4 +43,8 @@ class Attributes {
     @BeanProperty
     @Attribute(persistent = false)
     var nonpersistent: String = _
+    
+    @BeanProperty
+    @Attribute(cipher = true)
+    var ciphered: String = _
 }

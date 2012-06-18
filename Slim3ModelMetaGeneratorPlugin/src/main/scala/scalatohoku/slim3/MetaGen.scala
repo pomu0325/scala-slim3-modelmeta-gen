@@ -32,9 +32,11 @@ class MetaGen(val packageName: String, val modelName: String) {
     val persistentProps = props.keys.filter { attribute(_, "persistent") != "false" }
     val CollectionType = """java\.util\.(?:ArrayList|LinkedList|HashSet|LinkedHashSet|TreeSet|List|Set|SortedSet)\[(.+)\]""".r
 
+    var cipherProps = ""
     val valsSrc = persistentProps.map(k => props(k) match {
       case "String" =>
         val unindexed = if (attribute(k, "unindexed") == "true") "Unindexed" else ""
+        if (attribute(k, "cipher") == "true") cipherProps += MetaTemplate.IsCipherProperty.replace("$$propname$$", k)
         MetaTemplate.Attr.String.replace("$$propname$$", k).replace("$$unindexed$$", unindexed)
       case "com.google.appengine.api.datastore.Key" =>
         MetaTemplate.Attr.Key
@@ -69,18 +71,20 @@ class MetaGen(val packageName: String, val modelName: String) {
         case "com.google.appengine.api.datastore.Text" | "com.google.appengine.api.datastore.Blob" =>
           MetaTemplate.ModelToEntity.Unindexed
         case "String" if attribute(k, "lob") == "true" => MetaTemplate.ModelToEntity.LongText
+        case "String" if attribute(k, "cipher") == "true" => MetaTemplate.ModelToEntity.Ciphered
         case "Array[Byte]" if attribute(k, "lob") == "true" => MetaTemplate.ModelToEntity.Blob
         case _ if attribute(k, "unindexed") == "true" => MetaTemplate.ModelToEntity.Unindexed
         case _ => MetaTemplate.ModelToEntity.Indexed
       }).replace("$$propname$$", k).replace("$$getter$$", toGetter(k)))
 
     val entityToModelSrc = persistentProps.map { k =>
-      if (attribute(k, "lob") != "true")
-        MetaTemplate.EntityToModel.replace("$$propname$$", k).replace("$$setter$$", toSetter(k)).replace("$$typename$$", props(k))
-      else props(k) match {
-        case "String" => MetaTemplate.EntityToModelLongText.replace("$$propname$$", k).replace("$$setter$$", toSetter(k))
-        case "Array[Byte]" => MetaTemplate.EntityToModelBlob.replace("$$propname$$", k).replace("$$setter$$", toSetter(k))
-        case _ => MetaTemplate.EntityToModelLob.replace("$$propname$$", k).replace("$$setter$$", toSetter(k))
+      val lob = attribute(k, "lob")
+      props(k) match {
+        case "String" if attribute(k, "cipher") == "true" => MetaTemplate.EntityToModelCiphered.replace("$$propname$$", k).replace("$$setter$$", toSetter(k)).replace("$$typename$$", props(k))
+        case "String" if lob == "true" => MetaTemplate.EntityToModelLongText.replace("$$propname$$", k).replace("$$setter$$", toSetter(k))
+        case "Array[Byte]" if lob == "true" => MetaTemplate.EntityToModelBlob.replace("$$propname$$", k).replace("$$setter$$", toSetter(k))
+        case _ if lob == "true" => MetaTemplate.EntityToModelLob.replace("$$propname$$", k).replace("$$setter$$", toSetter(k))
+        case _ => MetaTemplate.EntityToModel.replace("$$propname$$", k).replace("$$setter$$", toSetter(k)).replace("$$typename$$", props(k))
       }
     }
 
@@ -120,6 +124,7 @@ class MetaGen(val packageName: String, val modelName: String) {
       .replace("$$modelname$$", modelName)
       .replace("$$package$$", packageName)
       .replace("$$static$$", staticSrc)
+      .replace("$$cipherprops$$", cipherProps)
   }
 
   private def toGetter(s: String) = "get" + toCamelCase(s)
