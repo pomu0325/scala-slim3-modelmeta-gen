@@ -68,6 +68,7 @@ class MetaGen(val packageName: String, val modelName: String) {
 
     val modelToEntitySrc = persistentProps.map(k =>
       (props(k) match {
+        case "com.google.appengine.api.datastore.Key" => ""
         case "com.google.appengine.api.datastore.Text" | "com.google.appengine.api.datastore.Blob" =>
           MetaTemplate.ModelToEntity.Unindexed
         case "String" if attribute(k, "lob") == "true" => MetaTemplate.ModelToEntity.LongText
@@ -80,6 +81,7 @@ class MetaGen(val packageName: String, val modelName: String) {
     val entityToModelSrc = persistentProps.map { k =>
       val lob = attribute(k, "lob")
       props(k) match {
+        case "com.google.appengine.api.datastore.Key" => ""
         case "String" if attribute(k, "cipher") == "true" => MetaTemplate.EntityToModelCiphered.replace("$$propname$$", k).replace("$$setter$$", toSetter(k)).replace("$$typename$$", props(k))
         case "String" if lob == "true" => MetaTemplate.EntityToModelLongText.replace("$$propname$$", k).replace("$$setter$$", toSetter(k))
         case "Array[Byte]" if lob == "true" => MetaTemplate.EntityToModelBlob.replace("$$propname$$", k).replace("$$setter$$", toSetter(k))
