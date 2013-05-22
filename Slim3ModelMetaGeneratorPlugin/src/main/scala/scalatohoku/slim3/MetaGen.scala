@@ -27,6 +27,19 @@ class MetaGen(val packageName: String, val modelName: String) {
     } getOrElse ""
   }
 
+  private def json(prop: String, k: String): String = {
+    annotations.get(prop).flatMap {
+      _.find(_.startsWith("org.slim3.datastore.json.Json")).flatMap { a =>
+        System.out.println(a)
+        val re = """.*%s = ([^,]+).*\)""".format(k).r
+        a match {
+          case re(v) => Some(v.trim)
+          case _ => None
+        }
+      }
+    } getOrElse ""
+  }
+
   private def contents: String = {
     val collections = collection.mutable.Map[String, Pair[String, String]]()
     val persistentProps = props.keys.filter { attribute(_, "persistent") != "false" }
@@ -91,7 +104,10 @@ class MetaGen(val packageName: String, val modelName: String) {
     }
 
     val modelToJsonSrc = props.keys.map { k =>
-      if (collections.contains(k))
+      println(json(k, "ignore"))
+      
+      if (json(k, "ignore") == "true") ""
+      else if (collections.contains(k))
         MetaTemplate.ModelToJsonCollection.replace("$$propname$$", k).replace("$$getter$$", toGetter(k))
       else props(k) match {
         case "Array[Byte]" => MetaTemplate.ModelToJsonBlob.replace("$$propname$$", k).replace("$$getter$$", toGetter(k))

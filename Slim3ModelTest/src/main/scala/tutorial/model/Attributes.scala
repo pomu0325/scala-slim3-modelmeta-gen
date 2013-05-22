@@ -6,9 +6,9 @@ package tutorial.model
 
 import java.util.Date
 import scala.reflect.BeanProperty
-
 import com.google.appengine.api.datastore.Key
 import org.slim3.datastore._
+import org.slim3.datastore.json.Json
 
 @Model(schemaVersion = 1)
 class Attributes {
@@ -47,4 +47,8 @@ class Attributes {
     @BeanProperty
     @Attribute(cipher = true)
     var ciphered: String = _
+    
+    @BeanProperty
+    @Json(ignore = true)
+    var jsonIgnore: String = "must be ignored"
 }
