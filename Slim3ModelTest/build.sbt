@@ -11,7 +11,7 @@ autoCompilerPlugins := true
 addCompilerPlugin("scalatohoku.slim3" %% "slim3modelmetageneratorplugin" % "0.3.0")
 
 libraryDependencies ++= Seq(
-  "org.slim3" % "slim3" % "1.0.13"
+  "org.slim3" % "slim3" % "1.0.16"
 )
 
 resolvers ++= Seq(
