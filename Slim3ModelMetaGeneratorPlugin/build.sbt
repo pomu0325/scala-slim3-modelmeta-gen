@@ -4,9 +4,9 @@ name := "Slim3ModelMetaGeneratorPlugin"
 
 version := "0.3.0"
 
-crossScalaVersions := Seq("2.9.2", "2.10.4")
+//crossScalaVersions := Seq("2.9.2", "2.10.4")
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.9.2"
 
 libraryDependencies <+= scalaVersion( "org.scala-lang" % "scala-compiler" % _ )
 

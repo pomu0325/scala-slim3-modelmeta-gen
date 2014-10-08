@@ -13,7 +13,7 @@ class ModelMetaTransformComponent(val global: Global) extends PluginComponent wi
 
   import global._
   import global.definitions._
-//  import reflect.generic.Flags._
+  import reflect.generic.Flags._
     
   val runsAfter = List[String]("refchecks");
   val phaseName = "model-meta-transform"
